@@ -1,32 +1,53 @@
 const Blog=require('../module/module');
 
-exports.getall=(req,res)=>{
+exports.getall=async(req,res)=>{
 
-    Blog.find()
+    
+   let data;
+   try {
+       data = await Blog.find();
+  console.log(data);
+
+   } catch (err) {
+       if(err) return res.status(500).json(err);
+   }
+   res.status(200).json(data);
+
+
+   /* Blog.find()
     .then((data)=>{
         res.status(200).json(data);
     })
     .catch((err)=>{
         if(err) res.status(500).json(err)
     });
+    */
 }
 
-exports.getone=(req,res)=>{
-
-    Blog.findById(req.params.blogID)
+exports.getone=async(req,res)=>{
+    let data;
+    try {
+        data = await Blog.findById();
+   console.log(data);
+ 
+    } catch (err) {
+        if(err) return res.status(500).json(err);
+    }
+    res.status(200).json(data);
+    /*Blog.findById(req.params.blogID)
         .then((data)=>{
             if(!data) return res.status(404).json({"mag":"Blog not found"});
             res.status(200).json(data);
         })
         .catch((err)=>{
             if(err) res.status(500).json(err);
-        })
+        })*/
 
 }
 
 exports.bytitle=(req,res)=>{
 
-    Blog.findById(req.params.title)
+    Blog.findOne({title:req.params.blogTitle})
     .then((data)=>{
         if(!data) return res.status(404).json({"mag":"Blog not found"});
         res.status(200).json(data);
@@ -36,11 +57,48 @@ exports.bytitle=(req,res)=>{
     })
 }
 
+exports.byauthor=(req,res)=>{
 
+    Blog.findOne({author:req.params.blogauthor})
+    .then((data)=>{
+        if(!data) return res.status(404).json({"mag":"Blog not found"});
+        res.status(200).json(data);
+    })
+    .catch((err)=>{
+        if(err) res.status(500).json(err);
+    })
+}
 
-exports.create=(req,res)=>{
+exports.bydesc=(req,res)=>{
 
-    const newblog=new Blog({
+    Blog.findOne({desc :req.params.blogdesc})
+    .then((data)=>{
+        if(!data) return res.status(404).json({"mag":"Blog not found"});
+        res.status(200).json(data);
+    })
+    .catch((err)=>{
+        if(err) res.status(500).json(err);
+    })
+}  
+
+exports.create=async(req,res)=>{
+
+    const newBlog=new Blog({
+        title:req.body.title,
+        author:req.body.author,
+       desc:req.body.desc
+   })
+   try{
+       await newBlog.save()
+   }
+   catch(err){
+       if(err) return res.status(500).json(err);
+   }
+   res.status(201).json({
+       "msg":"blog created",
+       "doc":newBlog
+   });
+   /* const newblog=new Blog({
         title:req.body.title,
         author:req.body.author,
         desc:req.body.desc
@@ -51,12 +109,32 @@ exports.create=(req,res)=>{
         res.status(201).json({"msg":"created","blog":blog});
     }).catch((err)=>{
         if(err) return res.status(500).json(err);
-    })
+    })*/
 }
 
-exports.updateone=(req,res)=>{
+exports.updateone=async(req,res)=>{
 
     if(!req.body.title||!req.body.desc||!req.body.author)
+    return res.status(500).json({"msg":"fill all the fields"});
+  let data;
+  
+  try{
+     
+      data= await Blog.findByIdAndUpdate(req.params.blogID,{
+              title: req.body.title,
+              author:req.body.author,
+              desc:req.body.desc
+             },{new:true});
+      if(!data) return res.status(404).json({"msg":"Not found"});
+  }
+  catch(err){
+      if(err) return res.status(500).json(err);
+  }
+  res.status(202).json({
+                    "msg":"updated",
+                    "doc":data
+                });
+    /*if(!req.body.title||!req.body.desc||!req.body.author)
         return res.status(500).json({"msg":"fill all the fields"});
     
     Blog.findByIdAndUpdate(req.params.blogID,{
@@ -74,12 +152,24 @@ exports.updateone=(req,res)=>{
         })
         .catch((err)=>{
             if(err) res.status(500).json(err)
-        })    
+        }) */   
 }
 
-exports.deleteone=(req,res)=>{
+exports.deleteone=async(req,res)=>{
 
-    Blog.findByIdAndDelete(req.params.blogID)
+    let data;
+    try{
+        data= await Blog.findByIdAndDelete( req.params.blogID);
+        if(!data) return res.status(404).json({"msg":"blog not found"});
+     }
+     catch(err){
+          if(err) return res.status(500).json(err);  
+     }
+     res.status(200).json({
+         "msg" : "deleted",
+         "doc":data
+     });
+   /* Blog.findByIdAndDelete(req.params.blogID)
         .then((data)=>{
 
             if(!data) return res.status(404).json({"msg":"Blog not found"});
@@ -92,6 +182,6 @@ exports.deleteone=(req,res)=>{
         })
         .catch((err)=>{
             if(err) res.status(500).json(err);
-        });
+        });*/
 
 }
