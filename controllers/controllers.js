@@ -26,14 +26,14 @@ exports.getall=async(req,res)=>{
 
 exports.getone=async(req,res)=>{
     let data;
-    try {
-        data = await Blog.findById();
-   console.log(data);
- 
-    } catch (err) {
-        if(err) return res.status(500).json(err);
-    }
-    res.status(200).json(data);
+    try{
+        data= await Blog.findById( req.params.blogID);
+        if(!data) return res.status(404).json({"msg":"blog not found"});
+     }
+     catch(err){
+          if(err) return res.status(500).json(err);  
+     }
+     res.status(200).json(data);
     /*Blog.findById(req.params.blogID)
         .then((data)=>{
             if(!data) return res.status(404).json({"mag":"Blog not found"});
